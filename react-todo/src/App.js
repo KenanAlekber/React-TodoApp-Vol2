@@ -1,8 +1,12 @@
 import { Todo } from './Todo/Todo';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
+const queryClient = new QueryClient();
 function App() {
   return (
-    <Todo />
+    <QueryClientProvider client={queryClient}>
+      <Todo />
+    </QueryClientProvider>
   );
 }
 
