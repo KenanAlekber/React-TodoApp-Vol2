@@ -12,16 +12,17 @@ export class HttpClient {
 
     async post(endPoint, body) {
         return await axios.post(`${this.baseUrl}/${endPoint}`, body)
-
     }
 
     async put(endPoint, body) {
         return await axios.put(`${this.baseUrl}/${endPoint}`, body)
+    }
 
+    async patch(endPoint, body) {
+        return await axios.patch(`${this.baseUrl}/${endPoint}`, body)
     }
 
     async delete(endPoint) {
         return await axios.delete(`${this.baseUrl}/${endPoint}`)
-
     }
 }

@@ -6,16 +6,24 @@ import { FadeLoader } from "react-spinners";
 
 export function Todo() {
     const [todos, setTodos] = React.useState([]);
+    const [updateTodosInput, setUpdateTodosInput] = React.useState({ title: "" })
     const [isEdit, setIsEdit] = React.useState(false);
     const { useTodosService } = useService();
 
-
-    const { data: todosData, isRefetching: refetchTodosData, isLoading: datasIsLoading } = useQuery("getAllTodos", () => {
-        useTodosService.getAllTodos().then(({ data }) => setTodos(data)).catch((err) => console.log(err))
+    const { isLoading: datasIsLoading } = useQuery("getAllTodos", () => {
+        return useTodosService.getAllTodos().then(({ data }) => setTodos(data)).catch((err) => console.log(err))
     })
 
     const { mutateAsync: mutateNewTodos, isLoading: mutateIsLoading } = useMutation((requestBody) => {
         return useTodosService.createNewTodos(requestBody).catch((err) => console.log(err))
+    })
+
+    const { mutateAsync: mutateTodos, isLoading: mutateTodosIsLoading } = useMutation((id, reqBody) => {
+        return useTodosService.updateTodosById(id, updateTodosInput).catch((err) => console.log(err))
+    })
+
+    const { mutateAsync: deleteTodos, isLoading: deleteTodosIsLoading } = useMutation((id) => {
+        return useTodosService.deleteTodosById(id).catch((err) => console.log(err))
     })
 
     const handleSetTodo = (e) => {
@@ -36,6 +44,8 @@ export function Todo() {
     }
 
     const handleInputChange = ({ target: { value } }, idx) => {
+        setUpdateTodosInput({ title: value });
+
         setTodos((previous) => {
             const oldData = [...previous];
             const updateItem = { ...previous[idx] }
@@ -45,13 +55,19 @@ export function Todo() {
         })
     }
 
-    const handleEditTodo = () => {
+    const handleEditTodo = (id) => {
+        if (isEdit)
+            mutateTodos(id, updateTodosInput)
+
         setIsEdit(!isEdit);
     }
 
-    const handleRemoveTodo = (id) => { setTodos((t) => t.filter((item) => item.id !== id)) }
+    const handleRemoveTodo = (id) => {
+        deleteTodos(id)
+        setTodos((t) => t.filter((item) => item.id !== id))
+    }
 
-    if (datasIsLoading || mutateIsLoading) {
+    if (datasIsLoading || mutateIsLoading || mutateTodosIsLoading || deleteTodosIsLoading) {
         return <FadeLoader color="#36d7b7" />
     }
 
@@ -77,7 +93,7 @@ export function Todo() {
                                     {isEdit ? <input className="input" type="text" placeholder="Edit text" onChange={(e) => handleInputChange(e, idx)} /> : <p>{title}</p>}
                                 </div>
                                 <div className="btns">
-                                    <button className="blue btn" onClick={() => handleEditTodo()}>
+                                    <button className="blue btn" onClick={() => handleEditTodo(id)}>
                                         <i className="fa-solid fa-pen-to-square"></i>
                                     </button>
 
